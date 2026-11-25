@@ -1,0 +1,11 @@
+{
+  "output": "reel.mp4",
+  "vertical": "blur",
+  "subtitles": "captions.srt",
+  "subtitle_style": {"position": "bottom"},
+  "crf": 22,
+  "clips": [
+    {"file": "scene1.mp4", "start": "0:01", "end": "0:04"},
+    {"file": "scene2.mp4", "start": 0, "duration": 3}
+  ]
+}

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clipcutter"
+version = "0.2.0"
+description = "Trim, join, reframe and subtitle videos with ffmpeg. Made by Mahamed Yasser."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [{name = "Mahamed Yasser"}]
+
+[project.scripts]
+clipcutter = "clipcutter.cli:main"
+
+[tool.setuptools]
+packages = ["clipcutter"]

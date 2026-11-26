@@ -1,6 +1,6 @@
-# Caption workflow (local extension, not published)
+# Caption workflow
 
-New in this local branch (`local/caption-workflow`); the original clipcutter code is unchanged except the CLI hook. Baseline (main): 34 tests pass. New: `clipcutter/captions.py`, `tests/test_captions.py`.
+AI-assisted extension. The original clipcutter code is unchanged except the CLI hook and an opt-in `--style readable` for `subs`. Baseline (main): 34 tests pass; with this branch: 72. New code: `clipcutter/captions.py`, tests in `tests/test_captions*.py`.
 
 ```
 clipcutter captions check   file.srt [--profile netflix-ar|none] [--json]

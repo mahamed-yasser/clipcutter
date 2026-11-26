@@ -86,23 +86,32 @@ POSITIONS = {"bottom": 2, "top": 6, "middle": 10}  # force_style uses the legacy
 
 
 def burn_subs_cmd(src, srt, dst, font_size=None, font="Noto Sans", position="bottom", margin=None, crf=22,
-                  video_size=None) -> List[str]:
+                  video_size=None, style="plain") -> List[str]:
     """font_size and margin are in video pixels. Left empty they scale with the video height
     (4% font, 5% margin), so the same call looks right on 720p and on a 1080x1920 reel."""
     if position not in POSITIONS:
         raise ClipError("position must be bottom, middle or top")
+    if style not in ("plain", "readable"):
+        raise ClipError("style must be plain or readable")
     if "," in font or "'" in font or "=" in font:
         raise ClipError("font name has characters that are not allowed")
     h = video_size[1] if video_size else ASS_PLAY_RES
-    fs = int(font_size) if font_size else max(10, round(h * 0.04))
-    mg = int(margin) if margin is not None else round(h * 0.05)
+    readable = style == "readable"
+    # "readable": larger bold text on a semi-transparent plate and a safer edge margin (opt-in; "plain" is unchanged).
+    fs = int(font_size) if font_size else max(10, round(h * (0.052 if readable else 0.04)))
+    mg = int(margin) if margin is not None else round(h * (0.08 if readable else 0.05))
     if fs < 6 or fs > 400:
         raise ClipError("font size must be between 6 and 400 pixels")
     # ffmpeg renders SRT on a virtual 288-pixel-high canvas, so convert real pixels to that scale.
     k = ASS_PLAY_RES / h
-    style = (f"FontName={font},FontSize={fs * k:.2f},Outline={max(1.0, fs / 12) * k:.2f},Shadow=0,"
-             f"Alignment={POSITIONS[position]},MarginV={mg * k:.2f}")
-    vf = f"subtitles='{_esc_filter_path(srt)}':force_style='{style}'"
+    if readable:
+        fstyle = (f"FontName={font},Bold=1,FontSize={fs * k:.2f},BorderStyle=3,Outline={fs * 0.22 * k:.2f},Shadow=0,"
+                  f"PrimaryColour=&H00FFFFFF,OutlineColour=&H8C000000,"
+                  f"Alignment={POSITIONS[position]},MarginV={mg * k:.2f},MarginL={h * 0.06 * k:.2f},MarginR={h * 0.06 * k:.2f}")
+    else:
+        fstyle = (f"FontName={font},FontSize={fs * k:.2f},Outline={max(1.0, fs / 12) * k:.2f},Shadow=0,"
+                  f"Alignment={POSITIONS[position]},MarginV={mg * k:.2f}")
+    vf = f"subtitles='{_esc_filter_path(srt)}':force_style='{fstyle}'"
     return ["ffmpeg", "-y", "-hide_banner", "-loglevel", "error", "-i", src, "-vf", vf] + enc(crf) + [dst]
 
 
@@ -197,13 +206,14 @@ def vertical(src, dst, mode="crop", crf=22, force=False):
         _verify(tmp)
 
 
-def burn_subs(src, srt, dst, font_size=None, font="Noto Sans", position="bottom", margin=None, crf=22, force=False):
+def burn_subs(src, srt, dst, font_size=None, font="Noto Sans", position="bottom", margin=None, crf=22, force=False,
+              style="plain"):
     _check_input(src); _check_input(srt); _check_output(dst, force, [src, srt])
     info = probe(src)
     if not info["width"]:
         raise ClipError(f"{src} has no video stream")
     with _atomic(dst) as tmp:
-        run(burn_subs_cmd(src, srt, tmp, font_size, font, position, margin, crf, (info["width"], info["height"])))
+        run(burn_subs_cmd(src, srt, tmp, font_size, font, position, margin, crf, (info["width"], info["height"]), style))
         _verify(tmp)
 
 

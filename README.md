@@ -86,3 +86,6 @@ Unit tests check the commands and option validation. The real-run tests generate
 
 ---
 Made by Mahamed Yasser
+
+## Caption workflow
+Check, fix, preview and RTL-safe burn-in of SRT/VTT captions (Arabic-friendly): see [README.captions.md](README.captions.md). AI-assisted extension; baseline `subs` is unchanged unless you pass `--style readable`.
